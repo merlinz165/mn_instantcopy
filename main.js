@@ -3,7 +3,6 @@ JSB.newAddon = function(mainPath) {
         //Mark: - Instance Method Definitions
         // Window initialize
         sceneWillConnect: function() {
-            self.webController = WebViewController.new();
         },
         // Window disconnect
         sceneDidDisconnect: function() {
