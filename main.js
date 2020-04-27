@@ -1,8 +1,9 @@
 JSB.newAddon = function(mainPath) {
-    var newAddonClass= JSB.defineClass('InstantCopy : JSExtension', {
+    var newAddonClass= JSB.defineClass('InstantCopyAddon : JSExtension', {
         //Mark: - Instance Method Definitions
         // Window initialize
         sceneWillConnect: function() {
+            self.webController = WebViewController.new();
         },
         // Window disconnect
         sceneDidDisconnect: function() {
@@ -15,20 +16,17 @@ JSB.newAddon = function(mainPath) {
         },
         //MARK: MN behaviors
         notebookWillOpen: function(notebookid) {
-            NSNotificationCenter.defaultCenter().addObserverSelectorName(self, 'onTextSelection:', 'TextSelection');
+            NSNotificationCenter.defaultCenter().addObserverSelectorName(self, 'onPopupMenuOnSelection:', 'PopupMenuOnSelection');
             self.instantCopy = NSUserDefaults.standardUserDefaults().objectForKey('marginnote_instantcopy');
         },
         notebookWillClose: function(notebookid) {
-            NSNotificationCenter.defaultCenter().removeObserverName(self, 'TextSelection');
+            NSNotificationCenter.defaultCenter().removeObserverName(self,'PopupMenuOnSelection');
         },
         documentDidOpen: function(docmd5) {
-
         },
         docmentWillClose: function(docmd5) {
-
         },
         controllerWillLayoutSubviews: function(controller) {
-
         },
         queryAddonCommandStatus: function() {
             if(Application.sharedInstance().studyController(self.window).studyMode < 3) {
@@ -42,20 +40,23 @@ JSB.newAddon = function(mainPath) {
             return null;
         },
 
-        //TODO: Selecting text on document
-        onTextSelection: function(sender) {
-            if(!Application.sharedInstance().checkNotifySenderInWindow(sender, self.window))
+        // Selecting text on document and Copy to Clipboard
+        onPopupMenuOnSelection: function(sender) {
+            if(!Application.sharedInstance().checkNotifySenderInWindow(sender,self.window)) {
                 return; // Don't process message from other window
-            if(!self.instantCopy)
+            }
+            if(!self.instantCopy) {
                 return;
+            }
             var text = sender.userInfo.documentController.selectionText;
             if(text && text.length) {
                 // Copy to Clipboard
-                self.instantCopy = !self.instantCopy;
+                var pasteBoard = UIPasteboard.generalPasteboard();
+                pasteBoard.string = text;
             }
         },
 
-        //TODO: copy text to Clipboard while selecting text
+        // toggleInstantCopy
         toggleInstantCopy: function(sender) {
             if(self.instantCopy) {
                 self.instantCopy = false;
